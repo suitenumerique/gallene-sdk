@@ -1,0 +1,3 @@
+class GaleneAPI:
+    pass
+

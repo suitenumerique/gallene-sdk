@@ -1,0 +1,1 @@
+Access Galene server APIs and generate access tokens.

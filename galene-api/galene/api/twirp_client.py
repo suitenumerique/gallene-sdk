@@ -1,0 +1,3 @@
+class TwirpError:
+    pass
+

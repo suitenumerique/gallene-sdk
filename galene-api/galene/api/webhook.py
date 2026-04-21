@@ -1,0 +1,2 @@
+class WebhookReceiver:
+    pass

@@ -1,0 +1,2 @@
+class RemoteParticipant:
+    pass
