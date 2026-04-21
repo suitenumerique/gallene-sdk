@@ -17,6 +17,7 @@ async def test_list_groups(galene_api):
         groups = await galene_api.groups.list_groups()
         assert groups == ["group1", "group2"]
 
+
 @pytest.mark.asyncio
 async def test_get_group(galene_api):
     with respx.mock:
