@@ -1,5 +1,5 @@
 [project]
-name = "galene-api-wrapper"
+name = "galene-sdk"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"

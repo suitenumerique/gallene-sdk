@@ -1,11 +1,13 @@
 import time
 import pytest
 import jwt
+import random
+import string
 from freezegun import freeze_time
 from galene.api.access_token import AccessToken, VideoGrants, TokenVerifier
 
 def test_access_token_generation():
-    key = "secret"
+    key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
     server_url = "https://galene.example.com"
     identity = "test-user"
     room = "test-room"
@@ -25,7 +27,7 @@ def test_access_token_generation():
         assert decoded["exp"] == int(time.time()) + 3600
 
 def test_access_token_custom_ttl():
-    key = "secret"
+    key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
     server_url = "https://galene.example.com"
     ttl = 7200
     
@@ -40,7 +42,7 @@ def test_access_token_custom_ttl():
         assert decoded["exp"] == decoded["iat"] + ttl
 
 def test_access_token_missing_fields():
-    token = AccessToken("key", "url")
+    token = AccessToken(''.join(random.choices(string.ascii_uppercase + string.digits, k=32)), "url")
     
     with pytest.raises(ValueError, match="VideoGrants .* must be provided"):
         token.to_jwt()
@@ -50,7 +52,7 @@ def test_access_token_missing_fields():
         token.to_jwt()
 
 def test_token_verifier_success():
-    key = "secret"
+    key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
     server_url = "https://galene.example.com"
     room = "room"
     audience = f"{server_url}/group/{room}/"
@@ -67,7 +69,7 @@ def test_token_verifier_success():
     assert payload["aud"] == audience
 
 def test_token_verifier_invalid_audience():
-    key = "secret"
+    key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
     token = AccessToken(key, "https://galene.com") \
         .with_identity("user") \
         .add_grant(VideoGrants(room="room1", permissions=[])) \
@@ -75,16 +77,17 @@ def test_token_verifier_invalid_audience():
     
     verifier = TokenVerifier(key)
     # Audience for room1 will be https://galene.com/group/room1/
-    with pytest.raises(ValueError, match="Invalid token: Invalid audience"):
+    with pytest.raises(ValueError, match="Invalid token: Audience doesn't match"):
         verifier.verify(token, expected_audience="https://galene.com/group/room2/")
 
 def test_server_url_trailing_slash():
     # URL with trailing slash should be normalized to remove it in the audience
-    token = AccessToken("key", "https://galene.com/") \
+    key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+    token = AccessToken(key, "https://galene.com/") \
         .with_identity("user") \
         .add_grant(VideoGrants(room="room", permissions=[])) \
         .to_jwt()
     
-    decoded = jwt.decode(token, "key", algorithms=["HS256"], options={"verify_aud": False})
+    decoded = jwt.decode(token, key, algorithms=["HS256"], options={"verify_aud": False})
     # audience = "https://galene.com/group/room/" (server_url rstripped slash + /group/room/)
     assert decoded["aud"] == "https://galene.com/group/room/"
