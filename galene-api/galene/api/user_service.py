@@ -20,7 +20,9 @@ class UserServiceClient:
     async def get_user(self, groupname: str, username: str) -> UserDefinition:
         """Retrieves a user definition."""
         resp = await self._http.get(f"/galene-api/v0/.groups/{groupname}/.users/{username}")
-        return UserDefinition.model_validate(resp.json())
+        user = resp.json()
+        return UserDefinition.model_validate(user)
+
 
     async def update_user(self, groupname: str, username: str, definition: UserDefinition) -> None:
         """Updates a user definition (permissions, etc). Does not set password."""

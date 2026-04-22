@@ -28,6 +28,21 @@ class GroupServiceClient:
         etag = resp.headers.get("ETag", "")
         return GroupDefinition.model_validate(resp.json()), etag
 
+
+    async def create_group(self, groupname: str, definition: GroupDefinition) -> None:
+        """Creates a new group.
+        
+        Args:
+            groupname: The name of the group.
+            definition: The group configuration.
+        """
+        await self._http.put(
+            f"/galene-api/v0/.groups/{groupname}",
+            json=definition.model_dump(exclude_unset=True),
+            headers={"If-None-Match": "*"}
+        )
+        
+
     async def update_group(self, groupname: str, definition: GroupDefinition, etag: Optional[str] = None) -> None:
         """
         Updates or creates a group definition.

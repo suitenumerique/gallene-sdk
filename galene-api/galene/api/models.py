@@ -3,8 +3,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserDefinition(BaseModel):
-    """Represents a Galene user's configuration."""
-    permissions: List[str] = Field(default_factory=list)
+    """Represents a Galene user's configuration.
+    permissions can be 'observe', 'present', 'op', 'admin', 'message', 'caption'
+    for now we consider that each user only have 1 permission at a time
+    """
+
+    permissions: Optional[str] = 'observe'
+
 
 
 class GroupDefinition(BaseModel):
