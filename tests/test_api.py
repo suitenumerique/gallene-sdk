@@ -12,7 +12,7 @@ load_dotenv()
 
 @pytest.fixture
 def galene_api():
-    admin = os.getenv("API_ADMIN_LOGIN", default = "caca")
+    admin = os.getenv("API_ADMIN_LOGIN", default = "admin")
     password = os.getenv("API_ADMIN_PASSWORD", default ="password")
     return GaleneAPI("https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr", admin, password)
 
