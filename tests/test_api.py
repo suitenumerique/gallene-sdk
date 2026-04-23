@@ -62,17 +62,17 @@ async def test_list_users(galene_api):
 
 @pytest.mark.asyncio
 async def test_create_user(galene_api):
-    new_user = UserDefinition()
-    await galene_api.users.update_user("night-watch", "test", new_user)
-    await galene_api.users.set_user_password("night-watch", "test", "password")
-    users = await galene_api.users.list_users("night-watch")
+    new_user = UserDefinition(permissions="present")
+    await galene_api.users.update_user("test-group", "test", new_user)
+    await galene_api.users.set_user_password("test-group", "test", "password")
+    users = await galene_api.users.list_users("test-group")
     assert "test" in users
 
 
 @pytest.mark.asyncio
 async def test_delete_user(galene_api):
-    await galene_api.users.delete_user("night-watch", "test")
-    assert "test" not in await galene_api.users.list_users("night-watch")
+    await galene_api.users.delete_user("test-group", "test")
+    assert "test" not in await galene_api.users.list_users("test-group")
 
 
 
