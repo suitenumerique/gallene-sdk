@@ -10,5 +10,5 @@ __all__ = [
     "AccessToken",
     "VideoGrants",
     "TokenVerifier",
-    "GaleneError
+    "GaleneError"
 ]
