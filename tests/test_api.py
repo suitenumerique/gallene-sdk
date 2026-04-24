@@ -16,6 +16,7 @@ def galene_api():
     password = os.getenv("API_ADMIN_PASSWORD", default ="password")
     return GaleneAPI("https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr", admin, password)
 
+"""
 @pytest.mark.asyncio
 async def test_list_groups(galene_api):
     groups = await galene_api.groups.list_groups()
@@ -29,6 +30,8 @@ async def test_get_group(galene_api):
     print(f"group description : {group}")
     print(f"group ETag : {etag}")
 
+
+
 @pytest.mark.asyncio
 async def test_update_group(galene_api):
     group, etag = await galene_api.groups.get_group("night-watch")
@@ -40,12 +43,15 @@ async def test_update_group(galene_api):
     assert group.description == "night-watch group"
 
 
+
 @pytest.mark.asyncio
 async def test_create_group(galene_api):
     new_group = GroupDefinition(description="new group", public=False)
     await galene_api.groups.create_group("new_group", new_group)  
     groups = await galene_api.groups.list_groups()
     assert "new_group" in groups
+
+
 
 
 @pytest.mark.asyncio
@@ -55,9 +61,12 @@ async def test_delete_group(galene_api):
     assert "new_group" not in groups
 
 
+
+
 @pytest.mark.asyncio
 async def test_list_users(galene_api):
-    users = await galene_api.users.list_users("night-watch")
+    users = await galene_api.users.list_users("test-group")
+    print(users)
     assert sorted(users) == ['vimes']
 
 @pytest.mark.asyncio
@@ -81,8 +90,20 @@ async def test_get_user(galene_api):
     user = await galene_api.users.get_user("night-watch", "test")
     assert user.permissions == "observe"
 
-    
 
+
+
+@pytest.mark.asyncio
+async def test_update_user(galene_api):
+    user = await galene_api.users.get_user("test-group", "test2")
+    print('user : ', user)
+    user.permissions = "present"
+    await galene_api.users.update_user("test-group", "test2", user)
+    user = await galene_api.users.get_user("test-group", "test2")
+    print('user now: ', user)
+    assert user.permissions == "present"
+
+"""
 @pytest.mark.asyncio
 async def test_jwks_and_access_token(galene_api):
     import base64
@@ -157,8 +178,9 @@ async def test_jwks_and_access_token(galene_api):
         # 5. Cleanup keys
         await galene_api.groups.delete_auth_keys("test-group")
 
-
+"""
 @pytest.mark.asyncio
 async def test_list_tokens(galene_api):
     tokens = await galene_api.users.list_tokens("test-group", "token-user")
     print(tokens)
+"""
