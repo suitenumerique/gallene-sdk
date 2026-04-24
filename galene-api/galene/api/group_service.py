@@ -30,12 +30,7 @@ class GroupServiceClient:
 
 
     async def create_group(self, groupname: str, definition: GroupDefinition) -> None:
-        """Creates a new group.
-        
-        Args:
-            groupname: The name of the group.
-            definition: The group configuration.
-        """
+        """Creates a new group."""
         await self._http.put(
             f"/galene-api/v0/.groups/{groupname}",
             json=definition.model_dump(exclude_unset=True),
