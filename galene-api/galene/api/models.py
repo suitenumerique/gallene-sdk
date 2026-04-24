@@ -8,7 +8,7 @@ class UserDefinition(BaseModel):
     for now we consider that each user only have 1 permission at a time
     """
 
-    permissions: Optional[str] = 'observe'
+    permissions: Optional[List[str]] = Field(default_factory=list)
 
 
 

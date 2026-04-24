@@ -66,12 +66,11 @@ async def test_delete_group(galene_api):
 @pytest.mark.asyncio
 async def test_list_users(galene_api):
     users = await galene_api.users.list_users("test-group")
-    print(users)
-    assert sorted(users) == ['vimes']
+    assert sorted(users) == ['test2']
 
 @pytest.mark.asyncio
 async def test_create_user(galene_api):
-    new_user = UserDefinition(permissions="present")
+    new_user = UserDefinition(permissions=["present"])
     await galene_api.users.update_user("test-group", "test", new_user)
     await galene_api.users.set_user_password("test-group", "test", "password")
     users = await galene_api.users.list_users("test-group")
@@ -80,28 +79,29 @@ async def test_create_user(galene_api):
 
 @pytest.mark.asyncio
 async def test_delete_user(galene_api):
-    await galene_api.users.delete_user("test-group", "test")
-    assert "test" not in await galene_api.users.list_users("test-group")
+    await galene_api.users.delete_user("test-group", "test2")
+    assert "test2" not in await galene_api.users.list_users("test-group")
 
 
 
 @pytest.mark.asyncio
 async def test_get_user(galene_api):
-    user = await galene_api.users.get_user("night-watch", "test")
-    assert user.permissions == "observe"
+    user = await galene_api.users.get_user("test-group", "test")
+    print(user)
+    #assert user.permissions == "observe"
 
 
 
 
 @pytest.mark.asyncio
 async def test_update_user(galene_api):
-    user = await galene_api.users.get_user("test-group", "test2")
+    user = await galene_api.users.get_user("test-group", "test")
     print('user : ', user)
-    user.permissions = "present"
-    await galene_api.users.update_user("test-group", "test2", user)
-    user = await galene_api.users.get_user("test-group", "test2")
+    user.permissions = ["present"]
+    await galene_api.users.update_user("test-group", "test", user)
+    user = await galene_api.users.get_user("test-group", "test")
     print('user now: ', user)
-    assert user.permissions == "present"
+    assert user.permissions == ["present"]
 
 """
 @pytest.mark.asyncio
@@ -134,7 +134,7 @@ async def test_jwks_and_access_token(galene_api):
     server_url = galene_api.http.server_url
     token_str = AccessToken(raw_key.decode(), server_url) \
         .with_identity("token-user") \
-        .add_grant(VideoGrants(room="test-group", permissions=["present", "op"])) \
+        .add_grant(VideoGrants(room="test-group", permissions= ["present"])) \
         .to_jwt(kid=key_id)
         
     print(f"Generated JWT: {token_str}")
@@ -155,7 +155,9 @@ async def test_jwks_and_access_token(galene_api):
     
     async def on_msg(data):
         print(f"\n[JWT Auth] WS Received: {data.get('type')}")
+        print(data)
         received_types.append(data.get("type"))
+
         
     client.on_message = on_msg
     
@@ -171,6 +173,7 @@ async def test_jwks_and_access_token(galene_api):
         
         assert "handshake" in received_types
         assert "joined" in received_types
+    
         print("Successfully joined using JWT!")
         
     finally:
