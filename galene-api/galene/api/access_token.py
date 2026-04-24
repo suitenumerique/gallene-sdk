@@ -48,7 +48,7 @@ class AccessToken:
         self.ttl = ttl_seconds
         return self
 
-    def to_jwt(self) -> str:
+    def to_jwt(self, kid: Optional[str] = None) -> str:
         if not self.grants:
             raise ValueError("VideoGrants (with room and permissions) must be provided")
         if not self.identity:
@@ -68,7 +68,11 @@ class AccessToken:
             "exp": now + self.ttl
         }
         
-        return jwt.encode(payload, self.key, algorithm="HS256")
+        headers = {}
+        if kid:
+            headers["kid"] = kid
+            
+        return jwt.encode(payload, self.key, algorithm="HS256", headers=headers)
 
 
 class TokenVerifier:

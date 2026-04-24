@@ -17,17 +17,21 @@ class AsyncGaleneHttpClient:
     """
     Base asynchronous HTTP client for the Galene administration API.
     """
-    def __init__(self, server_url: str, username: Optional[str] = None, password: Optional[str] = None):
+    def __init__(self, server_url: str, username: Optional[str] = None, password: Optional[str] = None, token: Optional[str] = None):
         self.server_url = server_url.rstrip("/")
         
         auth = None
-        if username and password:
+        headers = {"Content-Type": "application/json"}
+        
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        elif username and password:
             auth = (username, password)
             
         self._client = httpx.AsyncClient(
             base_url=self.server_url,
             auth=auth,
-            headers={"Content-Type": "application/json"}
+            headers=headers
         )
 
     def _handle_response_error(self, response: httpx.Response):

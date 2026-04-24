@@ -69,3 +69,21 @@ class GroupServiceClient:
     async def delete_group(self, groupname: str) -> None:
         """Deletes a group."""
         await self._http.delete(f"/galene-api/v0/.groups/{groupname}")
+
+    async def set_auth_keys(self, groupname: str, jwk_set: dict) -> None:
+        """
+        Sets the JSON Web Key Set (JWKS) used for validation of stateless tokens (JWTs).
+        
+        Args:
+            groupname: The name of the group.
+            jwk_set: A dictionary representing the JWKS (RFC 7517).
+        """
+        await self._http.put(
+            f"/galene-api/v0/.groups/{groupname}/.keys",
+            json=jwk_set,
+            headers={"Content-Type": "application/jwk-set+json"}
+        )
+
+    async def delete_auth_keys(self, groupname: str) -> None:
+        """Deletes the authentication keys for a group."""
+        await self._http.delete(f"/galene-api/v0/.groups/{groupname}/.keys")

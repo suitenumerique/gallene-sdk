@@ -8,8 +8,8 @@ class GaleneAPI:
     Main entry point for the Galene administration API.
     Provides access to group and user services.
     """
-    def __init__(self, server_url: str, username: Optional[str] = None, password: Optional[str] = None):
-        self.http = AsyncGaleneHttpClient(server_url, username, password)
+    def __init__(self, server_url: str, username: Optional[str] = None, password: Optional[str] = None, token: Optional[str] = None):
+        self.http = AsyncGaleneHttpClient(server_url, username, password, token)
         self.groups = GroupServiceClient(self.http)
         self.users = UserServiceClient(self.http)
 
