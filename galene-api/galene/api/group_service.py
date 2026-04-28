@@ -3,7 +3,7 @@ import httpx
 
 from .client import AsyncGaleneHttpClient
 from .models import GroupDefinition
-
+import base64
 
 class GroupServiceClient:
     """
@@ -48,6 +48,7 @@ class GroupServiceClient:
             etag: If provided, will be sent as 'If-Match' to avoid overwriting recent changes. 
                   If creating a new group, you could use etag='*' as If-None-Match per Galene API conventions.
         """
+        
         headers = {}
         if etag:
             if etag == "*":
@@ -65,7 +66,7 @@ class GroupServiceClient:
         """Deletes a group."""
         await self._http.delete(f"/galene-api/v0/.groups/{groupname}")
 
-    async def set_auth_keys(self, groupname: str, jwk_set: dict) -> None:
+    async def set_auth_keys(self, groupname: str, key : str) -> None:
         """
         Sets the JSON Web Key Set (JWKS) used for validation of stateless tokens (JWTs).
         
@@ -73,9 +74,21 @@ class GroupServiceClient:
             groupname: The name of the group.
             jwk_set: A dictionary representing the JWKS (RFC 7517).
         """
+        key_id  = "JWT-HS256-key"
+        b64_key = base64.urlsafe_b64encode(key.encode()).decode().rstrip("=")
+        jwks = {
+        "keys": [
+            {
+                "kty": "oct",
+                "kid": key_id,
+                "k": b64_key,
+                "alg": "HS256"
+            }
+        ]
+    }
         await self._http.put(
             f"/galene-api/v0/.groups/{groupname}/.keys",
-            json=jwk_set,
+            json=jwks,
             headers={"Content-Type": "application/jwk-set+json"}
         )
 
