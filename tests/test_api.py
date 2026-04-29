@@ -49,9 +49,9 @@ async def test_update_group(galene_api):
 @pytest.mark.asyncio
 async def test_create_group(galene_api):
     new_group = GroupDefinition(description="new group", public=False)
-    await galene_api.groups.create_group("test-group", new_group)  
+    await galene_api.groups.create_group("night-watch", new_group)  
     groups = await galene_api.groups.list_groups()
-    assert "test-group" in groups
+    assert "night-watch" in groups
 
 
 
@@ -72,11 +72,11 @@ async def test_list_users(galene_api):
 
 @pytest.mark.asyncio
 async def test_create_user(galene_api):
-    new_user = UserDefinition(permissions=["present"])
-    await galene_api.users.update_user("night-watch", "test", new_user)
-    await galene_api.users.set_user_password("night-watch", "test", "password")
+    new_user = UserDefinition(permissions=["op"])
+    await galene_api.users.update_user("night-watch", "vimes", new_user)
+    await galene_api.users.set_user_password("night-watch", "vimes", "sybil")
     users = await galene_api.users.list_users("night-watch")
-    assert "test" in users
+    assert "vimes" in users
 
 
 @pytest.mark.asyncio
@@ -110,8 +110,13 @@ async def test_update_user(galene_api):
 async def test_send_key(galene_api):
     import random
     import string
-    await galene_api.groups.set_auth_keys("night-watch", ''.join(random.choices(string.ascii_letters + string.digits, k=32)))
-    
+    await galene_api.groups.set_auth_keys("night-watch", "QBIBC0mkQn81WfoeAYEE7iJW1t9WzKPh")
+
+@pytest.mark.asyncio
+async def test_generate_token(galene_api):
+    from galene.api.access_token import AccessToken, VideoGrants, TokenVerifier
+    token = AccessToken("QBIBC0mkQn81WfoeAYEE7iJW1t9WzKPh", galene_api.http.server_url).with_identity("token-user").add_grant(VideoGrants(room="night-watch", permissions= ["present"])).to_jwt(kid="JWT-HS256-key")
+    print('token : ', token)
 
 @pytest.mark.asyncio
 async def test_jwks_and_access_token(galene_api):
@@ -120,35 +125,23 @@ async def test_jwks_and_access_token(galene_api):
     import string
     from galene.api.access_token import AccessToken, VideoGrants, TokenVerifier
     
-    # 1. Generate a random 32-byte symmetric key
-    raw_key = ''.join(random.choices(string.ascii_letters + string.digits, k=32)).encode()
-    b64_key = base64.urlsafe_b64encode(raw_key).decode().rstrip("=")
-    key_id = "test-key-1"
-    jwks = {
-        "keys": [
-            {
-                "kty": "oct",
-                "kid": key_id,
-                "k": b64_key,
-                "alg": "HS256"
-            }
-        ]
-    }
     
     # 2. Upload the keys
-    await galene_api.groups.set_auth_keys("night-watch", jwks)
+    #await galene_api.groups.set_auth_keys("night-watch", jwks)
     
     # 3. Create an Access Token
     server_url = galene_api.http.server_url
-    token_str = AccessToken(raw_key.decode(), server_url) \
+    token_str = AccessToken("QBIBC0mkQn81WfoeAYEE7iJW1t9WzKPh", server_url) \
         .with_identity("token-user") \
         .add_grant(VideoGrants(room="night-watch", permissions= ["present"])) \
-        .to_jwt(kid=key_id)
+        .to_jwt(kid="JWT-HS256-key")
+    
+    token_str = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkpXVC1IUzI1Ni1rZXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJ0b2tlbi11c2VyIiwiYXVkIjoiaHR0cHM6Ly9kdHktczI2LXAyLWdhbGVuZS5rOHMtY2xvdWQuY2VudHJhbGVzdXBlbGVjLmZyL2dyb3VwL25pZ2h0LXdhdGNoLyIsInBlcm1pc3Npb25zIjpbInByZXNlbnQiXSwiaWF0IjoxNzc3NDY0NDYzLCJleHAiOjE3Nzc1MDA0NjN9.EOrCvdBIu11H5XptM6vw4mqbWUr7jp_YdOTeZujrPAs"
         
     print(f"Generated JWT: {token_str}")
     
     # Verify the token decodes properly
-    verifier = TokenVerifier(raw_key.decode())
+    verifier = TokenVerifier("QBIBC0mkQn81WfoeAYEE7iJW1t9WzKPh")
     payload = verifier.verify(token_str, expected_audience=f"{server_url}/group/night-watch/")
     assert payload["sub"] == "token-user"
     assert "present" in payload["permissions"]
@@ -184,7 +177,6 @@ async def test_jwks_and_access_token(galene_api):
         assert "joined" in received_types
     
         print("Successfully joined using JWT!")
-        await asyncio.sleep(10)
         user = await galene_api.users.list_users("night-watch")
         print(user)
         await asyncio.sleep(10)
@@ -192,7 +184,7 @@ async def test_jwks_and_access_token(galene_api):
     finally:
         await client.close()
         # 5. Cleanup keys
-        await galene_api.groups.delete_auth_keys("night-watch")
+        #await galene_api.groups.delete_auth_keys("night-watch")
         await galene_api.close()
 
 

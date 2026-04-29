@@ -34,7 +34,7 @@ class AccessToken:
         self.server_url = server_url.rstrip('/')
         self.grants: Optional[VideoGrants] = None
         self.identity: Optional[str] = None
-        self.ttl: int = 3600  # Default expiration is 1 hour
+        self.ttl: int = 36000  # Default expiration is 1 hour
 
     def add_grant(self, grant: VideoGrants) -> "AccessToken":
         self.grants = grant
