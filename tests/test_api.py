@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-#PYTHONPATH=galene-api:galene-rtc uv run pytest -s tests/test_api.py -k test_list_group
+#PYTHONPATH=galene-api: uv run pytest -s tests/test_api.py -k test_list_group
 @pytest.fixture
 def galene_api():
     admin = os.getenv("API_ADMIN_LOGIN", default = "admin")
@@ -26,7 +26,7 @@ async def test_list_groups(galene_api):
 @pytest.mark.asyncio
 async def test_get_group(galene_api):
     print("TEST GET GROUP")
-    group, etag = await galene_api.groups.get_group("test-group")
+    group, etag = await galene_api.groups.get_group("rma-ngzt-oex")
     print(f"group description : {group}")
     print(f"group ETag : {etag}")
 
@@ -34,7 +34,7 @@ async def test_get_group(galene_api):
 
 @pytest.mark.asyncio
 async def test_update_group(galene_api):
-    group, etag = await galene_api.groups.get_group("test-group")
+    group, etag = await galene_api.groups.get_group("rma-ngzt-oex")
     print('etag 1 : ', etag)
     defi = group.model_dump(exclude_unset = True)
     new = {'permissions' : ["op"]}

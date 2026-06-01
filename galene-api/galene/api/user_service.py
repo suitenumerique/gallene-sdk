@@ -2,12 +2,12 @@ from typing import List
 import httpx
 
 from .client import AsyncGaleneHttpClient
-from .models import UserDefinition, StatefulToken
+from .models import UserDefinition
 
 
 class UserServiceClient:
     """
-    Client for managing Galene users and stateful tokens within a group.
+    Client for managing Galene users and tokens within a group.
     """
     def __init__(self, http_client: AsyncGaleneHttpClient):
         self._http = http_client
@@ -43,12 +43,3 @@ class UserServiceClient:
             headers={"Content-Type": "text/plain"}
         )
 
-    async def list_tokens(self, groupname: str, username: str) -> List[str]:
-        """Lists stateful tokens for a user."""
-        resp = await self._http.get(f"/galene-api/v0/.groups/{groupname}/.users/{username}/.tokens/")
-        return resp.json()
-
-    async def get_token(self, groupname: str, username: str, token_name: str) -> StatefulToken:
-        """Retrieves a stateful token."""
-        resp = await self._http.get(f"/galene-api/v0/.groups/{groupname}/.users/{username}/.tokens/{token_name}")
-        return StatefulToken.model_validate(resp.json())

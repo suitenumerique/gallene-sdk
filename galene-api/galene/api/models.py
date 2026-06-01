@@ -19,7 +19,7 @@ class GroupDefinition(BaseModel):
     are captured as extra properties (accessible via `.model_extra`).
     """
     model_config = ConfigDict(extra='allow')
-
+    displayName: Optional[str] = None
     description: Optional[str] = None
     contact: Optional[str] = None
     comment: Optional[str] = None
@@ -27,10 +27,3 @@ class GroupDefinition(BaseModel):
     autolock: Optional[bool] = None
     autokick: Optional[bool] = None
 
-
-class StatefulToken(BaseModel):
-    """Represents a dynamic/stateful token in Galene."""
-    token_name: str
-    username: str
-    permissions: List[str] = Field(default_factory=list)
-    expires: Optional[str] = None

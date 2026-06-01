@@ -25,6 +25,7 @@ class GroupServiceClient:
             A tuple of (GroupDefinition, ETag_string)
         """
         resp = await self._http.get(f"/galene-api/v0/.groups/{groupname}")
+        print(resp.json())
         etag = resp.headers.get("ETag", "")
         return GroupDefinition.model_validate(resp.json()), etag
 
