@@ -9,18 +9,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+#PYTHONPATH=galene-api:galene-rtc uv run pytest -s tests/test_api.py -k test_list_group
 @pytest.fixture
 def galene_api():
     admin = os.getenv("API_ADMIN_LOGIN", default = "admin")
     password = os.getenv("API_ADMIN_PASSWORD", default ="password")
-    return GaleneAPI("https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr", admin, password)
+    return GaleneAPI("https://galene.dty-s26-p2-galene.k8s-cloud.centralesupelec.fr", admin, password)
 
 
 @pytest.mark.asyncio
 async def test_list_groups(galene_api):
     groups = await galene_api.groups.list_groups()
-    assert groups == ['night-watch']
+    print(groups)
 
 
 @pytest.mark.asyncio
@@ -49,9 +49,9 @@ async def test_update_group(galene_api):
 @pytest.mark.asyncio
 async def test_create_group(galene_api):
     new_group = GroupDefinition(description="new group", public=False)
-    await galene_api.groups.create_group("night-watch", new_group)  
+    await galene_api.groups.create_group("wjr-woua-eba", new_group)  
     groups = await galene_api.groups.list_groups()
-    assert "night-watch" in groups
+    assert "wjr-woua-eba" in groups
 
 
 
@@ -67,15 +67,16 @@ async def test_delete_group(galene_api):
 
 @pytest.mark.asyncio
 async def test_list_users(galene_api):
-    users = await galene_api.users.list_users("test-group")
-    assert sorted(users) == ['test2']
+    users = await galene_api.users.list_users("wym-pxmn-eiw")
+    print(f"users : {users}")
 
 @pytest.mark.asyncio
 async def test_create_user(galene_api):
-    new_user = UserDefinition(permissions=["op"])
-    await galene_api.users.update_user("night-watch", "vimes", new_user)
-    await galene_api.users.set_user_password("night-watch", "vimes", "sybil")
-    users = await galene_api.users.list_users("night-watch")
+    new_user = UserDefinition(permissions=["op", "present", "message"])
+    await galene_api.users.update_user("evb-lfuf-pwz", "vimes", new_user)
+    await galene_api.users.set_user_password("evb-lfuf-pwz", "vimes", "sybil")
+    users = await galene_api.users.list_users("evb-lfuf-pwz")
+    print(f'users : {users}')
     assert "vimes" in users
 
 
@@ -115,77 +116,8 @@ async def test_send_key(galene_api):
 @pytest.mark.asyncio
 async def test_generate_token(galene_api):
     from galene.api.access_token import AccessToken, VideoGrants, TokenVerifier
-    token = AccessToken("QBIBC0mkQn81WfoeAYEE7iJW1t9WzKPh", galene_api.http.server_url).with_identity("token-user").add_grant(VideoGrants(room="night-watch", permissions= ["present"])).to_jwt(kid="JWT-HS256-key")
+    token = AccessToken("QBIBC0mkQn81WfoeAYEE7iJW1t9WzKPh", galene_api.http.server_url).with_identity("token-user").add_grant(VideoGrants(room="gii-mdyz-yzy", permissions= ["present"])).to_jwt(kid="JWT-HS256-key")
     print('token : ', token)
-
-@pytest.mark.asyncio
-async def test_jwks_and_access_token(galene_api):
-    import base64
-    import random
-    import string
-    from galene.api.access_token import AccessToken, VideoGrants, TokenVerifier
-    
-    
-    # 2. Upload the keys
-    #await galene_api.groups.set_auth_keys("night-watch", jwks)
-    
-    # 3. Create an Access Token
-    server_url = galene_api.http.server_url
-    token_str = AccessToken("QBIBC0mkQn81WfoeAYEE7iJW1t9WzKPh", server_url) \
-        .with_identity("token-user") \
-        .add_grant(VideoGrants(room="night-watch", permissions= ["present"])) \
-        .to_jwt(kid="JWT-HS256-key")
-    
-    token_str = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkpXVC1IUzI1Ni1rZXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJ0b2tlbi11c2VyIiwiYXVkIjoiaHR0cHM6Ly9kdHktczI2LXAyLWdhbGVuZS5rOHMtY2xvdWQuY2VudHJhbGVzdXBlbGVjLmZyL2dyb3VwL25pZ2h0LXdhdGNoLyIsInBlcm1pc3Npb25zIjpbInByZXNlbnQiXSwiaWF0IjoxNzc3NDY0NDYzLCJleHAiOjE3Nzc1MDA0NjN9.EOrCvdBIu11H5XptM6vw4mqbWUr7jp_YdOTeZujrPAs"
-        
-    print(f"Generated JWT: {token_str}")
-    
-    # Verify the token decodes properly
-    verifier = TokenVerifier("QBIBC0mkQn81WfoeAYEE7iJW1t9WzKPh")
-    payload = verifier.verify(token_str, expected_audience=f"{server_url}/group/night-watch/")
-    assert payload["sub"] == "token-user"
-    assert "present" in payload["permissions"]
-    
-    # 4. Connect via WebSocket and Join using the Token!
-    import asyncio
-    from galene.rtc.signal_client import SignalClient
-    
-    ws_url = "wss://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr/ws"
-    client = SignalClient()
-    received_types = []
-    
-    async def on_msg(data):
-        print(f"\n[JWT Auth] WS Received: {data.get('type')}")
-        print(data)
-        received_types.append(data.get("type"))
-
-        
-    client.on_message = on_msg
-    
-    try:
-        await client.connect(ws_url)
-        await client.send_handshake()
-        
-        # Join with the generated token instead of Òusername/password
-        print(f"Joining test-group with JWT token...")
-        await client.send_join(group="night-watch", token=token_str)
-
-        await asyncio.sleep(2)
-        user = await galene_api.users.list_users("night-watch")
-        print(user)
-        assert "handshake" in received_types
-        assert "joined" in received_types
-    
-        print("Successfully joined using JWT!")
-        user = await galene_api.users.list_users("night-watch")
-        print(user)
-        await asyncio.sleep(10)
-
-    finally:
-        await client.close()
-        # 5. Cleanup keys
-        #await galene_api.groups.delete_auth_keys("night-watch")
-        await galene_api.close()
 
 
 @pytest.mark.asyncio

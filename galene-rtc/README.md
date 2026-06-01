@@ -1,1 +1,0 @@
-Python SDK to integrate Galene's real-time video, audio, and data capabilities into your Python applications.
